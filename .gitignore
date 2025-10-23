@@ -1,0 +1,40 @@
+## Step 5: Check .gitignore
+
+1. **Open** `.gitignore` (if it exists, or create it)
+2. **Make sure it has:**
+```
+   # Environment variables
+   .env
+
+   # Dependencies
+   node_modules/
+
+   # Logs
+   *.log
+   npm-debug.log*
+
+   # OS files
+   .DS_Store
+   .vscode/
+
+   touch .gitignore
+```
+
+Then open `.gitignore` in VS Code and paste this:
+```
+# Environment variables
+.env
+
+# Dependencies
+node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+.vscode/
+
+# ngrok
+ngrok-*.zip
