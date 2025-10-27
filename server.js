@@ -22,22 +22,21 @@ const EMOJI_MAP = {
 // ============================================================================
 // 📂 STEP 2: SECTION ROUTING MAP (This is YOUR custom logic!)
 // ============================================================================
-// Maps form request types to Asana section names
-// NOTE: Form uses singular (Feature Request) but Asana uses plural (Feature Requests)
+// Maps form request types to Asana section GIDs
+// IMPORTANT: These GIDs must match your actual Asana sections
 const SECTION_MAP = {
-  'New Customer Onboarding': '🆕 New Customer Onboarding',
-  'Integration Issue': '🛠️ Integration Issue',
-  'Feature Requests': '✨ Feature Requests',
-  'Training Requests': '📚 Training Requests',
-  'Account/Billing Question': '🧾 Account/Billing Question',
-  'Something else?': '❓ Something Else?',
+  'New Customer Onboarding': '1211512835831277', // 🆕 New Customer Onboarding
+  'Integration Issue': '1211512835831283', // 🛠️ Integration Issue
+  'Feature Requests': '1211512835831274', // ✨ Feature Requests
+  'Training Requests': '1211512835831271', // 📚  Training Requests
+  'Account/Billing Question': '1211512835831280', // 🧾 Account/Billing Question
+  'Something else?': '1211512835831288', // ❓ Something Else
 };
 
 // Middleware - think of these as helpers that process requests
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Test endpoint to make sure server is working
 // Debug endpoint to see all sections
 app.get('/debug-sections', async (req, res) => {
   try {
@@ -127,25 +126,6 @@ async function getProjectSections() {
   }
 }
 
-/**
- * Find the section ID for a given section name
- * This looks through all sections to find the one we want
- */
-async function getSectionIdByName(sectionName) {
-  const sections = await getProjectSections();
-  const section = sections.find((s) => s.name === sectionName);
-
-  if (!section) {
-    console.warn(
-      `⚠️  Section "${sectionName}" not found. Task will go to default location.`
-    );
-    return null;
-  }
-
-  console.log(`✓ Found section: ${sectionName} (ID: ${section.gid})`);
-  return section.gid;
-}
-
 // Function to create a task in Asana
 async function createAsanaTask(formData) {
   const asanaUrl = 'https://app.asana.com/api/1.0/tasks';
@@ -167,12 +147,16 @@ async function createAsanaTask(formData) {
   // ============================================================================
   // 📂 STEP 2: GET THE SECTION ID FOR THIS REQUEST TYPE
   // ============================================================================
-  let sectionId = null;
-  const sectionName = SECTION_MAP[formData.requestType];
+  const sectionId = SECTION_MAP[formData.requestType] || null;
 
-  if (sectionName) {
-    console.log(`🔍 Looking for section: ${sectionName}`);
-    sectionId = await getSectionIdByName(sectionName);
+  if (sectionId) {
+    console.log(
+      `✓ Assigning to section ID: ${sectionId} for request type: ${formData.requestType}`
+    );
+  } else {
+    console.warn(
+      `⚠️  No section mapping found for "${formData.requestType}". Task will go to default location.`
+    );
   }
 
   const taskData = {
@@ -212,7 +196,7 @@ ${formData.description}
 
   try {
     const response = await axios.post(asanaUrl, taskData, { headers });
-    console.log(`✅ Task created in section: ${sectionName || 'default'}`);
+    console.log(`✅ Task created successfully`);
     return response.data;
   } catch (error) {
     console.error('Asana API Error:', error.response?.data || error.message);
